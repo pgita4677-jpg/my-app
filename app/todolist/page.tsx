@@ -1,55 +1,48 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 function TodoList() {
   const [input, setInput] = useState('')
   const [dataTodo, setDataTodo] = useState<string[]>([])
   const [search, setSearch] = useState('')
-  const [filteredTodo, setFilteredTodo] = useState<string[]>([])
+
+  useEffect(() => {
+    const storeData = localStorage.getItem('dataTodo')
+    if (storeData) {
+      setDataTodo(JSON.parse(storeData))
+    }
+  }, [])
 
   const addDataTodo = () => {
     if (input.trim().length === 0) {
-      window.alert('Masukkan Todo terlebih dahulu!')
+      setInput('')
+
+      alert('Masukan Todo Terlebih Dahulu')
       return
     }
 
-    const isDuplicate = dataTodo.some(
-      (item) => item.toLowerCase() === input.toLowerCase()
-    )
-    if (isDuplicate) {
-      window.alert('Todo sudah ada, masukkan yang berbeda!')
+    if (dataTodo.includes(input.trim())) {
+      alert('Data Sudah Ada')
       return
     }
 
     setDataTodo([...dataTodo, input])
     setInput('')
-    setFilteredTodo([]) // reset hasil filter kalau ada
+    localStorage.setItem('dataTodo', JSON.stringify([...dataTodo, input]))
+
   }
 
   const removeDataTodo = (index: number) => {
+    const tempData = [...dataTodo]
     const removeData = dataTodo.filter((_val, idx) => idx !== index)
     setDataTodo(removeData)
-    setFilteredTodo([]) // reset hasil pencarian biar gak aneh
+    localStorage.setItem('dataTodo', JSON.stringify(removeData))
+
   }
 
-  const searchTodo = () => {
-    if (search.trim().length === 0) {
-      window.alert('Masukkan kata untuk mencari!')
-      setFilteredTodo([])
-      return
-    }
-
-    const hasil = dataTodo.filter((item) =>
-      item.toLowerCase().includes(search.toLowerCase())
-    )
-
-    if (hasil.length === 0) {
-      window.alert('Data tidak ditemukan!')
-    }
-
-    setFilteredTodo(hasil)
-  }
-
+  const filterdata = dataTodo.filter((item) =>
+    item.toLowerCase().includes(search.toLowerCase())
+  )
   return (
     <div className='w-1/2 m-auto p-[63px]'>
       <div className='flex justify-between items-center'>
@@ -74,7 +67,7 @@ function TodoList() {
           />
         </div>
         <button
-          className='bg-[#503E9D] text-white h-[48px] px-[16px] rounded-lg text-center'
+          className='bg-[#503E9D] text-white h-[48px] w-[114px] px-[16px] rounded-lg text-center'
           onClick={addDataTodo}
         >
           Simpan
@@ -91,20 +84,13 @@ function TodoList() {
             placeholder='Cari Todo'
           />
         </div>
-        <button
-          className='bg-[#0084ff] text-white h-[48px] px-[16px] rounded-lg text-center'
-          onClick={searchTodo}
-        >
-          Cari
-        </button>
-      </div>
 
-      {/* List Todo */}
-      {(filteredTodo.length > 0 ? filteredTodo : dataTodo).map((value, index) => (
+      </div>
+      {filterdata.map((value, index) => (
         <div key={index} className='flex items-center justify-between mb-[16px]'>
           <p>{value}</p>
           <button
-            className='bg-[#FF0004] text-white h-[30px] px-[6px] rounded-lg'
+            className='bg-[#0084ff] text-white h-[30px] px-[6px] rounded-lg'
             onClick={() => removeDataTodo(index)}
           >
             Hapus
