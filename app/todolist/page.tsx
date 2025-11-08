@@ -5,6 +5,7 @@ function TodoList() {
   const [input, setInput] = useState('')
   const [dataTodo, setDataTodo] = useState<string[]>([])
   const [search, setSearch] = useState('')
+  const [editInput, setEditInput] = useState('')
 
   useEffect(() => {
     const storeData = localStorage.getItem('dataTodo')
@@ -13,10 +14,12 @@ function TodoList() {
     }
   }, [])
 
+  useEffect(() => {
+    localStorage.setItem('dataTodo', JSON.stringify(dataTodo))
+  }, [dataTodo])
+
   const addDataTodo = () => {
     if (input.trim().length === 0) {
-      setInput('')
-
       alert('Masukan Todo Terlebih Dahulu')
       return
     }
@@ -28,21 +31,38 @@ function TodoList() {
 
     setDataTodo([...dataTodo, input])
     setInput('')
-    localStorage.setItem('dataTodo', JSON.stringify([...dataTodo, input]))
-
   }
 
   const removeDataTodo = (index: number) => {
-    const tempData = [...dataTodo]
     const removeData = dataTodo.filter((_val, idx) => idx !== index)
     setDataTodo(removeData)
-    localStorage.setItem('dataTodo', JSON.stringify(removeData))
+  }
 
+  const editTodo = () => {
+    if (!editInput.trim()) {
+      alert('Masukan teks baru!')
+      return
+    }
+
+    const index = dataTodo.findIndex(item =>
+      item.toLowerCase().includes(search.toLowerCase())
+    )
+
+    if (index !== -1) {
+      const update = [...dataTodo]
+      update[index] = editInput.trim() // ✅ perbaikan di sini
+      setDataTodo(update)
+      setEditInput('')
+      alert('Todo berhasil diubah!')
+    } else {
+      alert('Todo yang dicari tidak ditemukan!')
+    }
   }
 
   const filterdata = dataTodo.filter((item) =>
     item.toLowerCase().includes(search.toLowerCase())
   )
+
   return (
     <div className='w-1/2 m-auto p-[63px]'>
       <div className='flex justify-between items-center'>
@@ -84,8 +104,27 @@ function TodoList() {
             placeholder='Cari Todo'
           />
         </div>
-
       </div>
+
+      {/* Input edit */}
+      <div className='flex items-center gap-2 mb-[40px]'>
+        <div className='flex-1'>
+          <input
+            value={editInput}
+            onChange={(e) => setEditInput(e.target.value)}
+            className='w-full border border-[#E4E4E4] rounded-lg py-[8px] px-[16px]'
+            placeholder='Masukan teks baru'
+          />
+        </div>
+        <button
+          className='bg-[#4CAF50] text-white h-[48px] w-[114px] px-[16px] rounded-lg text-center'
+          onClick={editTodo}
+        >
+          Edit
+        </button>
+      </div>
+
+      {/* Daftar Todo */}
       {filterdata.map((value, index) => (
         <div key={index} className='flex items-center justify-between mb-[16px]'>
           <p>{value}</p>
